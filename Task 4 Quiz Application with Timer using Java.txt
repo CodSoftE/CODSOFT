@@ -1,0 +1,113 @@
+import java.util.*;
+
+public class QuizApplication {
+    private static final int QUESTION_TIME_LIMIT_SECONDS = 10;
+    private static final int COVER_TIME_SECONDS = 20;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Timer timer = new Timer();
+        TimerTask coverTask = new TimerTask() {
+            int timeLeft = COVER_TIME_SECONDS;
+
+            @Override
+            public void run() {
+                if (timeLeft > 0) {
+                    System.out.println("Cover Time: " + timeLeft + " seconds");
+                    timeLeft--;
+                } else {
+                    System.out.println("Cover Time's up! Starting quiz...");
+                    cancel();
+                }
+            }
+        };
+
+        timer.scheduleAtFixedRate(coverTask, 0, 1000);
+        try {
+            Thread.sleep((COVER_TIME_SECONDS + 1) * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        coverTask.cancel();
+
+        Map<String, String> questions = new LinkedHashMap<>();
+        questions.put("What is the capital of France?", "Paris");
+        questions.put("What is the largest planet in our solar system?", "Jupiter");
+        questions.put("Who wrote 'Romeo and Juliet'?", "William Shakespeare");
+        questions.put("What is the chemical symbol for water?", "H2O");
+        questions.put("What is the tallest mammal?", "Giraffe");
+        questions.put("What year did the Titanic sink?", "1912");
+        questions.put("What is the currency of Japan?", "Yen");
+        questions.put("Who painted the Mona Lisa?", "Leonardo da Vinci");
+        questions.put("What is the powerhouse of the cell?", "Mitochondria");
+        questions.put("What is the largest ocean on Earth?", "Pacific Ocean");
+        // Add more questions here...
+
+        int score = 0;
+
+        for (String question : questions.keySet()) {
+            System.out.println(question);
+            List<String> options = generateOptions(questions.get(question));
+            displayOptions(options);
+
+            TimerTask task = new TimerTask() {
+                int timeLeft = QUESTION_TIME_LIMIT_SECONDS;
+
+                @Override
+                public void run() {
+                    if (timeLeft > 0) {
+                        System.out.println("Time left: " + timeLeft + " seconds");
+                        timeLeft--;
+                    } else {
+                        System.out.println("Time's up!");
+                        cancel();
+                    }
+                }
+            };
+
+            timer.scheduleAtFixedRate(task, 0, 1000);
+
+            String answer = scanner.nextLine().trim().toLowerCase();
+
+            task.cancel();
+
+            if (answer.equals("a")) {
+                score++;
+            }
+        }
+
+        System.out.println("Quiz Completed!");
+        System.out.println("Score: " + score);
+        timer.cancel();
+    }
+
+    private static List<String> generateOptions(String correctAnswer) {
+        List<String> options = new ArrayList<>();
+        options.add(correctAnswer);
+
+        Random random = new Random();
+        while (options.size() < 4) {
+            String option = generateOption(correctAnswer, random);
+            if (!options.contains(option)) {
+                options.add(option);
+            }
+        }
+
+        Collections.shuffle(options);
+        return options;
+    }
+
+    private static String generateOption(String correctAnswer, Random random) {
+        char[] chars = correctAnswer.toCharArray();
+        chars[random.nextInt(chars.length)] = (char) ('A' + random.nextInt(26));
+        return new String(chars);
+    }
+
+    private static void displayOptions(List<String> options) {
+        char option = 'A';
+        for (String opt : options) {
+            System.out.println(option + ". " + opt);
+            option++;
+        }
+    }
+}

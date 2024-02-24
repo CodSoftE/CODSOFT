@@ -1,0 +1,204 @@
+import java.util.*;
+
+public class CourseRegistrationSystem {
+    private Map<String, Course> courses;
+    private Map<Integer, Student> students;
+
+    public CourseRegistrationSystem() {
+        this.courses = new HashMap<>();
+        this.students = new HashMap<>();
+    }
+
+    public void addCourse(String code, String title, String description, int capacity, String schedule) {
+        Course course = new Course(code, title, description, capacity, schedule);
+        courses.put(code, course);
+    }
+
+    public void removeCourse(String code) {
+        courses.remove(code);
+    }
+
+    public void registerStudent(int id, String name) {
+        Student student = new Student(id, name);
+        students.put(id, student);
+    }
+
+    public void enrollStudentInCourse(int studentId, String courseCode) {
+        Student student = students.get(studentId);
+        Course course = courses.get(courseCode);
+
+        if (student == null || course == null) {
+            System.out.println("Invalid student ID or course code.");
+            return;
+        }
+
+        if (course.getCapacity() <= 0) {
+            System.out.println("Course is already full.");
+            return;
+        }
+
+        student.enroll(course);
+        course.decreaseCapacity();
+    }
+
+    public void dropCourse(int studentId, String courseCode) {
+        Student student = students.get(studentId);
+        Course course = courses.get(courseCode);
+
+        if (student == null || course == null) {
+            System.out.println("Invalid student ID or course code.");
+            return;
+        }
+
+        student.drop(course);
+        course.increaseCapacity();
+    }
+
+    public void displayCourses() {
+        System.out.println("Available Courses:");
+        for (Course course : courses.values()) {
+            System.out.println(course);
+        }
+    }
+
+    public void displayStudents() {
+        System.out.println("Registered Students:");
+        for (Student student : students.values()) {
+            System.out.println(student);
+        }
+    }
+
+    public static void main(String[] args) {
+        CourseRegistrationSystem registrationSystem = new CourseRegistrationSystem();
+
+        // Adding courses
+        registrationSystem.addCourse("CSCI101", "Introduction to Computer Science", "Fundamentals of programming", 30, "MWF 10:00 AM - 11:30 AM");
+        registrationSystem.addCourse("MATH201", "Calculus I", "Limits, derivatives, and integrals", 25, "TTH 1:00 PM - 2:30 PM");
+        registrationSystem.addCourse("PHYS101", "Physics I", "Classical mechanics", 20, "MWF 8:00 AM - 9:30 AM");
+        registrationSystem.addCourse("CHEM101", "Chemistry I", "Basic principles of chemistry", 25, "TTH 10:00 AM - 11:30 AM");
+
+        // Registering students
+        registrationSystem.registerStudent(1001, "John Doe");
+        registrationSystem.registerStudent(1002, "Jane Smith");
+
+        Scanner scanner = new Scanner(System.in);
+
+        // User input for course registration and dropping
+        System.out.println("Welcome to the Course Registration System");
+        while (true) {
+            System.out.println("\n1. Register for a course");
+            System.out.println("2. Drop a course");
+            System.out.println("3. Display available courses");
+            System.out.println("4. Display registered students");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+
+            switch (choice) {
+                case 1:
+                    registerCourse(registrationSystem, scanner);
+                    break;
+                case 2:
+                    dropCourse(registrationSystem, scanner);
+                    break;
+                case 3:
+                    registrationSystem.displayCourses();
+                    break;
+                case 4:
+                    registrationSystem.displayStudents();
+                    break;
+                case 5:
+                    System.out.println("Exiting...");
+                    scanner.close();
+                    return; // Exit the program
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    private static void registerCourse(CourseRegistrationSystem registrationSystem, Scanner scanner) {
+        System.out.println("Enter student ID:");
+        int studentId = scanner.nextInt();
+        scanner.nextLine(); // Consume newline character
+
+        System.out.println("Enter course code:");
+        String courseCode = scanner.nextLine();
+
+        registrationSystem.enrollStudentInCourse(studentId, courseCode);
+    }
+
+    private static void dropCourse(CourseRegistrationSystem registrationSystem, Scanner scanner) {
+        System.out.println("Enter student ID:");
+        int studentId = scanner.nextInt();
+        scanner.nextLine(); // Consume newline character
+
+        System.out.println("Enter course code:");
+        String courseCode = scanner.nextLine();
+
+        registrationSystem.dropCourse(studentId, courseCode);
+    }
+}
+
+class Course {
+    private String code;
+    private String title;
+    private String description;
+    private int capacity;
+    private String schedule;
+
+    public Course(String code, String title, String description, int capacity, String schedule) {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.capacity = capacity;
+        this.schedule = schedule;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void decreaseCapacity() {
+        capacity--;
+    }
+
+    public void increaseCapacity() {
+        capacity++;
+    }
+
+    @Override
+    public String toString() {
+        return code + " - " + title + " (" + capacity + " slots available)";
+    }
+}
+
+class Student {
+    private int id;
+    private String name;
+    private List<Course> courses;
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+        this.courses = new ArrayList<>();
+    }
+
+    public void enroll(Course course) {
+        courses.add(course);
+    }
+
+    public void drop(Course course) {
+        courses.remove(course);
+    }
+
+    @Override
+    public String toString() {
+        return id + ": " + name + " - Registered Courses: " + courses.size();
+    }
+}
